@@ -169,7 +169,7 @@ elecrticty_outges/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pulsegrid-rwanda.git
+git clone https://github.com/IYAMPAYE/pulsegrid-rwanda.git
 cd pulsegrid-rwanda
 ```
 
@@ -252,7 +252,7 @@ Ensure `www/` assets and `.Renviron` are configured on the deployment environmen
 Data Scientist — Rwanda
 
 - Live app: [PulseGrid on shinyapps.io](https://psz5gu-iyampaye-ribert.shinyapps.io/elecrticty_outges/)
-- GitHub: `YOUR_GITHUB_USERNAME` *(update after you create the repo)*
+- GitHub: [IYAMPAYE](https://github.com/IYAMPAYE)
 
 ---
 
