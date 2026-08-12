@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>REG Outage Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#fefcff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "primary-container": "#1a2b4b",
+                    "surface-bright": "#f9f9ff",
+                    "primary": "#031635",
+                    "surface-dim": "#d0daef",
+                    "error": "#ba1a1a",
+                    "surface-tint": "#4e5e81",
+                    "surface-container-low": "#eff3ff",
+                    "inverse-primary": "#b6c6ef",
+                    "inverse-on-surface": "#ebf1ff",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#081b3a",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#e6eeff",
+                    "tertiary-fixed-dim": "#e8c08a",
+                    "on-secondary-fixed": "#001a42",
+                    "outline": "#75777f",
+                    "secondary": "#0058be",
+                    "surface-container-highest": "#d9e3f7",
+                    "tertiary": "#231400",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#273140",
+                    "secondary-container": "#2170e4",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffddb1",
+                    "surface": "#f9f9ff",
+                    "outline-variant": "#c5c6cf",
+                    "on-primary-fixed-variant": "#364768",
+                    "on-background": "#121c2a",
+                    "on-surface": "#121c2a",
+                    "on-surface-variant": "#44474e",
+                    "on-secondary-fixed-variant": "#004395",
+                    "on-tertiary-container": "#b08d5b",
+                    "on-tertiary-fixed": "#291800",
+                    "tertiary-container": "#3e2700",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#d9e3f7",
+                    "background": "#f9f9ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#8293b8",
+                    "on-tertiary-fixed-variant": "#5d4217",
+                    "primary-fixed": "#d8e2ff",
+                    "surface-container-high": "#dee9fd",
+                    "primary-fixed-dim": "#b6c6ef"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "24px",
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "base": "8px",
+                    "sm": "12px",
+                    "xl": "80px",
+                    "gutter": "24px",
+                    "lg": "48px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "label-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "36px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-sm": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Navigation Drawer (Mobile) - Hidden by default -->
+<div class="fixed inset-0 bg-on-background/50 z-50 hidden md:hidden" id="mobile-menu">
+<div class="h-full w-80 bg-surface-container flex flex-col p-base shadow-md transform -translate-x-full transition-transform duration-300" id="mobile-menu-drawer">
+<div class="flex items-center justify-between p-md border-b border-outline-variant">
+<span class="text-headline-sm font-headline-sm text-primary">Menu</span>
+<button class="p-2 text-on-surface hover:bg-surface-variant rounded-full transition-colors" id="close-menu">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<nav class="flex-1 overflow-y-auto py-sm space-y-xs px-2">
+<a class="flex items-center gap-sm px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-label-md" href="#">
+<span class="material-symbols-outlined fill-icon">home</span>
+                    Home
+                </a>
+<a class="flex items-center gap-sm px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md transition-colors" href="#about">
+<span class="material-symbols-outlined">info</span>
+                    About
+                </a>
+<a class="flex items-center gap-sm px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md transition-colors" href="#how-it-works">
+<span class="material-symbols-outlined">account_tree</span>
+                    How It Works
+                </a>
+<a class="flex items-center gap-sm px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md transition-colors" href="#contact">
+<span class="material-symbols-outlined">contact_support</span>
+                    Contact
+                </a>
+<a class="flex items-center gap-sm px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg font-label-md transition-colors mt-lg border-t border-outline-variant pt-4" href="#login">
+<span class="material-symbols-outlined">login</span>
+                    Login
+                </a>
+</nav>
+</div>
+</div>
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-40 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-sm">
+<button class="md:hidden p-2 -ml-2 text-primary hover:bg-surface-variant rounded-full transition-colors" id="open-menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined fill-icon text-[32px]">bolt</span>
+<span class="text-headline-md font-headline-md font-bold">REG Outage Portal</span>
+</div>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex items-center gap-lg h-full">
+<a class="h-full flex items-center text-secondary font-bold border-b-2 border-secondary px-2 hover:opacity-80 transition-opacity" href="#">Home</a>
+<a class="h-full flex items-center text-on-surface-variant hover:text-secondary transition-colors px-2" href="#about">About</a>
+<a class="h-full flex items-center text-on-surface-variant hover:text-secondary transition-colors px-2" href="#how-it-works">How It Works</a>
+<a class="h-full flex items-center text-on-surface-variant hover:text-secondary transition-colors px-2" href="#contact">Contact</a>
+</nav>
+<div class="flex items-center">
+<a class="hidden md:inline-flex items-center justify-center h-12 px-6 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/90 transition-colors" href="#report">
+                Report Outage
+            </a>
+<a class="md:hidden flex items-center justify-center p-2 text-primary hover:bg-surface-variant rounded-full transition-colors" href="#login">
+<span class="material-symbols-outlined">login</span>
+</a>
+</div>
+</header>
+<main class="flex-1 pt-20">
+<!-- Hero Section -->
+<section class="relative bg-primary-container text-on-primary min-h-[600px] flex items-center overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-40 mix-blend-overlay">
+<img alt="Power distribution network at sunset in Rwanda" class="w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC81GdbwZ-zPqwFREbV719UxxTcS74ln9eJhXTlwQiNLXodv-1-Za2B2FlHmZwsZnfDUn7r6cqt6r-hbG3ZFwaJjQJIrt2KMAhS7ozrdgdZ7_kEaaj-EZjuZLjgxsJiLY6NTNwsEHiokx7gHfz8herS5R5kNKXO9fayRU4UZN4h26s1SRuB7u4zQLu_QnX3CggGBaJCLisvGT138T7uVqABTwfQC6YV0NiO3CyQiLmxa8UZCoxlt2-p"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-r from-primary-container to-transparent z-10"></div>
+<div class="relative z-20 w-full px-margin-mobile md:px-margin-desktop py-xl md:py-[120px] max-w-7xl mx-auto">
+<div class="max-w-2xl">
+<h1 class="font-headline-xl text-headline-lg-mobile md:text-headline-xl font-bold mb-6 text-on-primary">
+                        Power Problems? <br/>
+                        Report Them Once. <br/>
+<span class="text-tertiary-fixed">We'll Take It From Here.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-primary/90 mb-10 max-w-xl">
+                        A faster, more reliable way to report electricity outages in your area. Track the status of your report in real-time, straight from your device.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<a class="inline-flex items-center justify-center h-14 px-8 bg-tertiary-fixed text-primary rounded-lg font-label-md hover:bg-tertiary-fixed-dim transition-colors w-full sm:w-auto shadow-md" href="#report">
+                            Report an Outage
+                        </a>
+<a class="inline-flex items-center justify-center h-14 px-8 bg-surface-bright/10 text-on-primary border border-outline/30 rounded-lg font-label-md hover:bg-surface-bright/20 transition-colors w-full sm:w-auto backdrop-blur-sm" href="#track">
+                            Track My Report
+                        </a>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Section -->
+<section class="py-xl px-margin-mobile md:px-margin-desktop bg-surface max-w-7xl mx-auto">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[28px]">edit_document</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">Report Easily</h3>
+<p class="text-body-sm text-on-surface-variant">Submit outage details quickly with location tagging for precise reporting.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[28px]">confirmation_number</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">Automatic Ticketing</h3>
+<p class="text-body-sm text-on-surface-variant">Every report generates a unique ticket number instantly for your records.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[28px]">speed</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">Faster Response</h3>
+<p class="text-body-sm text-on-surface-variant">Direct routing to localized technician teams ensures quicker dispatch times.</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/50 shadow-sm flex flex-col items-start hover:shadow-md transition-shadow">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center mb-4 text-primary">
+<span class="material-symbols-outlined text-[28px]">notifications_active</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">Stay Informed</h3>
+<p class="text-body-sm text-on-surface-variant">Receive SMS or email updates as your ticket progresses to resolution.</p>
+</div>
+</div>
+</section>
+<!-- Final CTA -->
+<section class="py-xl px-margin-mobile md:px-margin-desktop bg-surface-container text-center">
+<div class="max-w-3xl mx-auto">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold text-primary mb-6">
+                    Electricity problem? Let us know.
+                </h2>
+<div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+<a class="inline-flex items-center justify-center h-14 px-8 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/90 transition-colors" href="#report">
+                        Report an Outage
+                    </a>
+<a class="inline-flex items-center justify-center h-14 px-8 bg-surface-container-lowest text-primary border border-outline rounded-lg font-label-md hover:bg-surface-variant transition-colors" href="#login">
+                        Login to My Dashboard
+                    </a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary w-full py-lg px-margin-mobile md:px-margin-desktop">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-gutter items-center">
+<div>
+<p class="font-body-sm text-body-sm text-on-primary/80 mb-4 md:mb-0">
+                    © 2024 Rwanda Energy Group. All rights reserved.
+                </p>
+</div>
+<div class="flex flex-wrap gap-4 md:justify-end">
+<a class="font-body-sm text-body-sm text-on-primary/80 hover:text-tertiary-fixed-dim transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-primary/80 hover:text-tertiary-fixed-dim transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-primary/80 hover:text-tertiary-fixed-dim transition-colors" href="#">FAQ</a>
+<a class="font-body-sm text-body-sm text-on-primary/80 hover:text-tertiary-fixed-dim transition-colors" href="#">Emergency Contact</a>
+</div>
+</div>
+</footer>
+<script>
+        // Mobile Menu Toggle
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuDrawer = document.getElementById('mobile-menu-drawer');
+        const openMenuBtn = document.getElementById('open-menu');
+        const closeMenuBtn = document.getElementById('close-menu');
+
+        function toggleMenu() {
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                // Small delay to allow display:block to apply before animating transform
+                setTimeout(() => {
+                    mobileMenuDrawer.classList.remove('-translate-x-full');
+                }, 10);
+            } else {
+                mobileMenuDrawer.classList.add('-translate-x-full');
+                // Wait for animation to finish before hiding
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        openMenuBtn.addEventListener('click', toggleMenu);
+        closeMenuBtn.addEventListener('click', toggleMenu);
+        
+        // Close on backdrop click
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                toggleMenu();
+            }
+        });
+    </script>
+</body></html>

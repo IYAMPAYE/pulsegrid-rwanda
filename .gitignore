@@ -1,0 +1,27 @@
+# Secrets — never commit
+.Renviron
+.env
+*.env
+.secrets/
+
+# R / RStudio local state
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Deployment credentials
+rsconnect/
+
+# n8n export with live API keys (use n8n/pulsegrid-workflow.template.json)
+My workflow (7).json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*~

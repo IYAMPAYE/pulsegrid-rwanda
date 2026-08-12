@@ -1,0 +1,4 @@
+# Copy this file to .Renviron and fill in your Supabase database password.
+# Restart R after saving (Session > Restart R).
+
+SUPABASE_DB_PASSWORD=your_supabase_database_password_here

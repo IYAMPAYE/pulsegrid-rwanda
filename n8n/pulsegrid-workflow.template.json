@@ -1,0 +1,1050 @@
+﻿{
+  "name": "PulseGrid Outage Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Electricity Issue Report",
+        "formDescription": "Tell us about the electricity problem you're experiencing and we'll get a technician to you.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "name",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "phone",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "region",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "kigali"
+                  },
+                  {
+                    "option": "rubavu"
+                  },
+                  {
+                    "option": "huye"
+                  },
+                  {
+                    "option": "musanze"
+                  },
+                  {
+                    "option": "nyagatare"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "time window",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "06:00-08:00"
+                  },
+                  {
+                    "option": "08:00-12:00"
+                  },
+                  {
+                    "option": "12:00-18:00"
+                  },
+                  {
+                    "option": "18:00-22:00"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Tell us more about what's happening",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -256,
+        0
+      ],
+      "id": "66f16595-27ca-489c-9eeb-aa28e5843d55",
+      "name": "On form submission",
+      "webhookId": "be7c67e8-b8ac-4150-a352-9e5d1b5132e2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3b87a4a-92aa-46ac-897b-729a44063c1e",
+              "name": "ticket_id",
+              "value": "={{ $now.format('X') }}",
+              "type": "string"
+            },
+            {
+              "id": "c3ac1476-8bd7-429f-be10-cd24853b080a",
+              "name": "issue_type",
+              "value": "Electricity Issue",
+              "type": "string"
+            },
+            {
+              "id": "3e5d3460-7195-4d28-9109-858a105459fb",
+              "name": "status",
+              "value": "new",
+              "type": "string"
+            },
+            {
+              "id": "f63d7399-21d4-4a8e-8728-bfb7917dffc8",
+              "name": "created_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "05bd87c5-3abd-407c-bb1f-311fe03c657a",
+              "name": "urgency",
+              "value": "Unscored",
+              "type": "string"
+            },
+            {
+              "id": "f874c428-6d9a-4994-b64b-2d90914d755f",
+              "name": "time_window",
+              "value": "={{ $json[\"time window\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e921021a-4a2c-4c31-a5d9-d852cb450903",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "f31583dd-4446-4ded-9ee3-becf97aa1ee2",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "828b1062-e380-46ba-8b40-4a0bb9ac86a8",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "45c57e0a-d923-4b0e-9d19-e2b9dd60c5c7",
+              "name": "region",
+              "value": "={{ $json.region }}",
+              "type": "string"
+            },
+            {
+              "id": "85b4176e-41b2-40a0-a748-be3bf5207fe2",
+              "name": "description",
+              "value": "={{ $json[\"Tell us more about what's happening\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        48,
+        0
+      ],
+      "id": "a52b2be2-a063-4a61-a318-666f84147c4d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Insert rows in a table').first().json.email }}",
+        "subject": "We received your report",
+        "message": "=Hi {{ $('Insert rows in a table').first().json.name }}, we've received your electricity issue report for {{ $('Insert rows in a table').first().json.region }} and will follow up shortly.\n\nYour ticket number is: {{ $('Insert rows in a table').first().json.ticket_id }}\n\nWe'll email you automatically whenever your ticket's status changes.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        0
+      ],
+      "id": "51498316-5b74-40d4-a5e1-5090c6c3e3c0",
+      "name": "Send a message",
+      "webhookId": "26c9c33e-07ce-48f3-ad2c-528ffedc58a1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R8xtufT9PX3WlRrj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "YOUR_GEMINI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"You are an assistant that scores the urgency of electricity outage reports for a utility company in Rwanda. Customers may describe their situation in Kinyarwanda, French, or English \\u2014 understand the description regardless of which language it's written in. Read the customer's description and respond with ONLY a JSON object (no markdown, no extra text) in this exact format, with the values themselves always in English: {\\\"urgency\\\": \\\"Low\\\" or \\\"Medium\\\" or \\\"High\\\", \\\"safety_flag\\\": \\\"Yes\\\" or \\\"No\\\", \\\"reason\\\": \\\"one short sentence explaining why, written in English\\\"}. Mark safety_flag as Yes if there is any mention of fire, sparks, smoke, electric shock, or immediate danger. Treat vulnerable circumstances (young children, elderly residents, medical equipment, newborns) as raising urgency even without explicit danger words. Customer's description: \\\"{{ JSON.stringify($json.description).slice(1, -1) }}\\\". Region: {{ $json.region }}. Time window: {{ $json.time_window }}.\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"response_mime_type\": \"application/json\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        288,
+        0
+      ],
+      "id": "1fd55796-bd5d-4690-a305-45f229f1b3b3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PulseGrid â€” urgency scoring\n// Primary: read Gemini's real assessment from the HTTP Request node.\n// Fallback: free keyword scoring, used only if Gemini's response\n// is missing or can't be parsed (API hiccup, rate limit, etc.)\n\n// The Gemini response is the current item.\n// The original ticket fields (ticket_id, name, etc.) live on the\n// \"Edit Fields\" node's output, which we fetch by name â€” it no\n// longer flows through automatically once HTTP Request replaces it.\nconst geminiResponse = $input.first().json;\nconst item = $('Edit Fields').first().json;\n\nlet urgency = null;\nlet safetyFlag = null;\nlet reason = null;\n\n// --- Try reading Gemini's answer first ---\ntry {\n  const rawText = geminiResponse.candidates[0].content.parts[0].text;\n  const parsed = JSON.parse(rawText);\n\n  if (parsed.urgency && parsed.safety_flag) {\n    urgency = parsed.urgency;\n    safetyFlag = parsed.safety_flag;\n    reason = parsed.reason || \"Scored by AI\";\n  }\n} catch (e) {\n  // Gemini response missing or malformed â€” fall through to keywords\n}\n\n// --- Fallback: free keyword scoring ---\nif (!urgency) {\n  const text = (item.description || \"\").toLowerCase();\n\n  const emergencyWords = [\"spark\", \"sparks\", \"sparking\", \"smoke\", \"burning\",\n    \"fire\", \"shock\", \"shocked\", \"explode\", \"explosion\", \"smell of burning\"];\n\n  const distressWords = [\"scared\", \"terrified\", \"emergency\", \"urgent\",\n    \"dangerous\", \"please help\", \"worried\", \"afraid\"];\n\n  const minorWords = [\"flicker\", \"flickering\", \"sometimes\", \"occasionally\",\n    \"minor\", \"small\", \"slight\", \"dim\"];\n\n  let matched = [];\n  let flagged = false;\n\n  for (const w of emergencyWords) {\n    if (text.includes(w)) { flagged = true; matched.push(w); }\n  }\n  for (const w of distressWords) {\n    if (text.includes(w)) { matched.push(w); }\n  }\n\n  if (flagged || distressWords.some(w => text.includes(w))) {\n    urgency = \"High\";\n  } else if (minorWords.some(w => text.includes(w)) && text.length < 200) {\n    urgency = \"Low\";\n  } else {\n    urgency = \"Medium\";\n  }\n\n  safetyFlag = flagged ? \"Yes\" : \"No\";\n  reason = matched.length\n    ? \"Fallback keyword match: \" + matched.join(\", \")\n    : \"Fallback: no strong signals detected\";\n}\n\n// --- Build the final ticket, dropping the huge Gemini response object ---\nreturn {\n  json: {\n    ticket_id: item.ticket_id,\n    issue_type: item.issue_type,\n    status: item.status,\n    created_at: item.created_at,\n    time_window: item.time_window,\n    email: item.email,\n    phone: item.phone,\n    name: item.name,\n    region: item.region,\n    description: item.description,\n    urgency: urgency,\n    safety_flag: safetyFlag,\n    urgency_reason: reason\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "e4c04878-814e-4f11-bf53-6ec82d649bee",
+      "name": "Urgency Scoring"
+    },
+    {
+      "parameters": {
+        "jsCode": "// PulseGrid â€” outage clustering + technician routing\n//\n// Reads:\n//  - the scored ticket from \"Urgency Scoring\"\n//  - recent same-region tickets from \"Get row(s) in sheet\"\n//\n// If several reports from the same region landed close together,\n// treat it as a likely area-wide outage: escalate urgency and\n// note the cluster. Also assigns a technician based on region.\n\nconst currentTicket = $('Urgency Scoring').first().json;\nconst matchingRows = $input.all().map(i => i.json);\n\nconst CLUSTER_WINDOW_HOURS = 3;   // how far back counts as \"recent\"\nconst CLUSTER_THRESHOLD = 2;      // existing recent reports needed to call it a cluster\n\nconst cutoff = Date.now() - CLUSTER_WINDOW_HOURS * 60 * 60 * 1000;\n\nconst recentSameRegion = matchingRows.filter(r => {\n  const t = new Date(r.created_at).getTime();\n  return !isNaN(t) && t > cutoff && r.status !== \"Resolved\";\n});\n\nconst clusterAlert = recentSameRegion.length >= CLUSTER_THRESHOLD ? \"Yes\" : \"No\";\nconst clusterCount = recentSameRegion.length + 1; // +1 includes this new ticket\n\n// --- Escalate urgency if this looks like a real cluster ---\nlet urgency = currentTicket.urgency;\nlet urgencyReason = currentTicket.urgency_reason;\n\nif (clusterAlert === \"Yes\" && urgency !== \"High\") {\n  urgencyReason = \"Escalated to High: \" + clusterCount + \" reports from \" +\n    currentTicket.region + \" in the last \" + CLUSTER_WINDOW_HOURS +\n    \" hours. Original assessment: \" + urgencyReason;\n  urgency = \"High\";\n}\n\n// --- Assign a technician by region ---\nconst technicianMap = {\n  \"kigali\": \"J. Mugisha\",\n  \"huye\": \"A. Uwase\",\n  \"musanze\": \"P. Niyonzima\",\n  \"rubavu\": \"J. Mugisha\",\n  \"nyagatare\": \"A. Uwase\"\n};\n\nconst technicianEmailMap = {\n  \"J. Mugisha\": \"technician1@example.com\",\n  \"A. Uwase\": \"technician2@example.com\",\n  \"P. Niyonzima\": \"technician3@example.com\",\n  \"Unassigned\": \"dispatch@example.com\"\n};\n\nconst regionKey = (currentTicket.region || \"\").toLowerCase();\nconst technician = technicianMap[regionKey] || \"Unassigned\";\nconst technicianEmail = technicianEmailMap[technician] || technicianEmailMap[\"Unassigned\"];\n\nreturn {\n  json: {\n    ...currentTicket,\n    urgency: urgency,\n    urgency_reason: urgencyReason,\n    technician: technician,\n    technician_email: technicianEmail,\n    cluster_alert: clusterAlert,\n    cluster_count: clusterCount\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        0
+      ],
+      "id": "97ce2eab-ed94-4ff2-9824-6e44be4d4238",
+      "name": "Clustering And Routing"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.technician_email }}",
+        "subject": "=New ticket assigned: {{ $json.region }} - {{ $json.urgency }}",
+        "message": "=Hi {{ $json.technician }}, a new ticket has been assigned to you.\n\nTicket ID: {{ $json.ticket_id }}\nRegion: {{ $json.region }}\nUrgency: {{ $json.urgency }}\nCustomer: {{ $json.name }} ({{ $json.phone }})\nSituation summary (AI-translated): {{ $json.urgency_reason }}\n\nWhen you start or finish this job, update its status here:\nhttps://ribert.app.n8n.cloud/form/0fc05f92-c1d5-4e2d-b1e7-a94a02343305",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        0
+      ],
+      "id": "41c96e69-ef9c-4094-aab6-f657cb7d755c",
+      "name": "Send a message2",
+      "webhookId": "41da3e03-7dab-486d-9a91-c63cf154b17c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R8xtufT9PX3WlRrj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Update Ticket Status",
+        "formDescription": "For technicians: update a ticket's status here.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ticket ID",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "New Status",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "New"
+                  },
+                  {
+                    "option": "In Progress"
+                  },
+                  {
+                    "option": "Resolved"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -208,
+        224
+      ],
+      "id": "3f82e031-0ca4-4e51-8f48-99f2675d6a4b",
+      "name": "On form submission2",
+      "webhookId": "0fc05f92-c1d5-4e2d-b1e7-a94a02343305"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "ticket_id": 0,
+            "cluster_count": 0
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "region",
+              "displayName": "region",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time_window",
+              "displayName": "time_window",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "technician",
+              "displayName": "technician",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "technician_email",
+              "displayName": "technician_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_flag",
+              "displayName": "safety_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency_reason",
+              "displayName": "urgency_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_alert",
+              "displayName": "cluster_alert",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_count",
+              "displayName": "cluster_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1168,
+        0
+      ],
+      "id": "b76dabb3-310e-4fea-957d-e0be60885bb7",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "region",
+              "value": "={{ $json.region }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        704,
+        0
+      ],
+      "id": "93b13e0d-c50c-4be2-9cb3-582c4e42b221",
+      "name": "Get Recent Tickets",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tickets",
+          "mode": "list",
+          "cachedResultName": "tickets"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "cluster_count": 0,
+            "ticket_id": "={{ $json['Ticket ID'] }}",
+            "status": "={{ $json['New Status'] }}"
+          },
+          "matchingColumns": [
+            "ticket_id"
+          ],
+          "schema": [
+            {
+              "id": "ticket_id",
+              "displayName": "ticket_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "region",
+              "displayName": "region",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue_type",
+              "displayName": "issue_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time_window",
+              "displayName": "time_window",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "technician",
+              "displayName": "technician",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "technician_email",
+              "displayName": "technician_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_flag",
+              "displayName": "safety_flag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency_reason",
+              "displayName": "urgency_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_alert",
+              "displayName": "cluster_alert",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_count",
+              "displayName": "cluster_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        64,
+        224
+      ],
+      "id": "e61337e8-ab6a-4852-9b4d-c23dfe5cc81d",
+      "name": "Update Ticket Status (Postgres)",
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        256
+      ],
+      "id": "205bdf38-eb1b-4e60-98ee-08f32f2f5423",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Update on your electricity report",
+        "message": "=Hi {{ $json.name }}, your ticket status is now: {{ $json.status }}.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        256
+      ],
+      "id": "eb390cc5-5deb-4e68-bf22-f333899639e9",
+      "name": "Send a message3",
+      "webhookId": "6d7fbe28-b777-4f92-be9e-eb69f3e25736",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "R8xtufT9PX3WlRrj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "update tickets set notified_status = status where ticket_id = {{ $('Find Changed Tickets').item.json.ticket_id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1504,
+        256
+      ],
+      "id": "e473bdb6-24da-4096-a919-a97d8cfacd1b",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from tickets where status is distinct from notified_status;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        848,
+        256
+      ],
+      "id": "7236f00b-8a05-4fea-a288-d07998c227c0",
+      "name": "Find Changed Tickets",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5810589c-1f79-4366-b66f-48506f27c308",
+              "leftValue": "={{ $json.ticket_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1056,
+        256
+      ],
+      "id": "d0e183f0-1aca-4658-9a7f-406797e7c0ae",
+      "name": "Filter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Urgency Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Urgency Scoring": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clustering And Routing": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission2": {
+      "main": [
+        [
+          {
+            "node": "Update Ticket Status (Postgres)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Tickets": {
+      "main": [
+        [
+          {
+            "node": "Clustering And Routing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Ticket Status (Postgres)": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Find Changed Tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message3": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Changed Tickets": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "eb623e2a-371c-4525-aa03-cbac8ac95761",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3ed12a857afaad521588543008b04209d5b9eda74c13a0569fd90314330200b6"
+  },
+  "nodeGroups": [],
+  "id": "nGbdiJigytmKU926",
+  "tags": []
+}
