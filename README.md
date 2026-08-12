@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # PulseGrid — Rwanda Electricity Outage Portal
 
 **A full-stack outage reporting and field operations platform built for Rwanda Energy Group (REG).**
