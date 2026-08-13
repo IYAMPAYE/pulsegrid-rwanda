@@ -11,7 +11,6 @@ Live demo: [https://psz5gu-iyampaye-ribert.shinyapps.io/elecrticty_outges/](http
 
 Report form (public): [n8n outage form](https://regrwanda.app.n8n.cloud/form/db35406c-9d56-4a55-81df-444072f2260d)
 
----
 
 ## Overview
 
