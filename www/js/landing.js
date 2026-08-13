@@ -1,6 +1,11 @@
 // PulseGrid landing page: hero videos, headline animation, scroll reveal
 window.PulseGrid = window.PulseGrid || {};
 
+PulseGrid.bootLanding = function () {
+  if (!document.querySelector('.reg-hero')) return;
+  PulseGrid.initLanding();
+};
+
 PulseGrid.initLanding = function () {
   PulseGrid.initLandingVideos();
   PulseGrid.initLandingHeadline();
@@ -27,18 +32,25 @@ PulseGrid.initLandingVideos = function () {
 
   videos.forEach(function (video) {
     video.muted = true;
+    video.defaultMuted = true;
     video.playsInline = true;
+    video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     video.preload = 'auto';
     video.loop = false;
     video.playbackRate = HERO_RATES[video.id] || 1;
+    video.addEventListener('error', function () {
+      var poster = document.querySelector('.reg-hero-poster');
+      if (poster) poster.classList.remove('is-hidden');
+    });
   });
 
   function getActive() { return videos[activeIdx]; }
   function getStandby() { return videos[1 - activeIdx]; }
 
   function safePlay(video) {
+    if (!video) return Promise.resolve();
     var playPromise = video.play();
     if (playPromise && typeof playPromise.then === 'function') {
       return playPromise.catch(function () {});
@@ -121,6 +133,7 @@ PulseGrid.initLandingVideos = function () {
     }
     video.addEventListener('loadeddata', done, { once: true });
     video.addEventListener('canplay', done, { once: true });
+    setTimeout(done, 4000);
   }
 
   v1.load();
@@ -138,9 +151,23 @@ PulseGrid.initLandingVideos = function () {
   document.addEventListener('click', function kickstart() {
     var active = getActive();
     safePlay(active);
-    if (!switchTimer) scheduleNextSwitch(active);
+    if (!started) startPlayback();
+    else if (!switchTimer) scheduleNextSwitch(active);
     document.removeEventListener('click', kickstart);
   }, { once: true });
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          safePlay(getActive());
+          if (!started) startPlayback();
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.2 });
+    observer.observe(hero);
+  }
 };
 
 PulseGrid.initLandingHeadline = function () {
@@ -204,15 +231,29 @@ PulseGrid.initLandingScrollMotion = function () {
 };
 
 PulseGrid.initNavScroll = function () {
-  var header = document.querySelector('.reg-header');
-  if (!header || header.dataset.navScrollInit === '1') return;
-  header.dataset.navScrollInit = '1';
+  if (!PulseGrid._navScrollBound) {
+    PulseGrid._navScrollBound = true;
+    window.addEventListener('scroll', function () {
+      var header = document.querySelector('.reg-header');
+      if (!header) return;
+      if (window.scrollY > 30) header.classList.add('nav-scrolled');
+      else header.classList.remove('nav-scrolled');
+    }, { passive: true });
+  }
 
-  window.addEventListener('scroll', function () {
-    if (window.scrollY > 30) {
-      header.classList.add('nav-scrolled');
-    } else {
-      header.classList.remove('nav-scrolled');
-    }
-  }, { passive: true });
+  var header = document.querySelector('.reg-header');
+  if (!header) return;
+  if (window.scrollY > 30) header.classList.add('nav-scrolled');
+  else header.classList.remove('nav-scrolled');
 };
+
+document.addEventListener('DOMContentLoaded', PulseGrid.bootLanding);
+document.addEventListener('shiny:connected', PulseGrid.bootLanding);
+
+if (window.jQuery) {
+  jQuery(document).on('shiny:value', function (event) {
+    if (event.name === 'page') {
+      setTimeout(PulseGrid.bootLanding, 0);
+    }
+  });
+}

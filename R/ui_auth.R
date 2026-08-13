@@ -71,7 +71,7 @@ login_ui <- function(error_message = NULL) {
                                )
                              },
                              tags$div(class = "role-hint-box",
-                                      tags$div(bs_icon("info-circle-fill"), style = "display: inline; margin-right: 5px; color: #0284c7;"),
+                                      tags$span(class = "role-hint-icon", bs_icon("info-circle-fill")),
                                       tags$strong("Access Note: "), "Administrators view full region ops. Field technicians access personal assignment queues."
                              )
                     )

@@ -1,13 +1,14 @@
 # Authentication and technician account helpers
-
 authenticate_user <- function(email, password) {
   with_db({
     rows <- dbGetQuery(con, "
       select 'admin'::text as role, id, name, email,
-             null::text as phone, false as must_change_password, password_hash
+             null::text as phone, false as must_change_password, password_hash,
+             true as active
       from admins where lower(email) = lower($1)
       union all
-      select 'technician', id, name, email, phone, must_change_password, password_hash
+      select 'technician', id, name, email, phone, must_change_password, password_hash,
+             coalesce(active, true) as active
       from technicians where lower(email) = lower($1)
       limit 2
     ", params = list(email))
@@ -19,13 +20,18 @@ authenticate_user <- function(email, password) {
       if (is.na(row$password_hash) || !nzchar(row$password_hash)) next
       if (!bcrypt::checkpw(password, row$password_hash)) next
 
+      if (identical(row$role, "technician") && !isTRUE(row$active)) {
+        return(list(deactivated = TRUE))
+      }
+
       return(list(
         role = row$role,
         id = row$id,
         name = row$name,
         email = row$email,
         phone = if (identical(row$role, "technician")) row$phone else NULL,
-        must_change_password = if (identical(row$role, "technician")) isTRUE(row$must_change_password) else FALSE
+        must_change_password = if (identical(row$role, "technician")) isTRUE(row$must_change_password) else FALSE,
+        active = isTRUE(row$active)
       ))
     }
 
@@ -80,7 +86,7 @@ load_technician_tickets <- function(technician_email) {
   with_db(
     dbGetQuery(
       con,
-      "select * from tickets where technician_email = $1 order by created_at desc",
+      "select * from tickets where lower(technician_email) = lower($1) order by created_at desc",
       params = list(technician_email)
     )
   )

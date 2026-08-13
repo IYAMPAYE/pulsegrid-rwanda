@@ -26,6 +26,12 @@ PulseGrid.initAuth = function () {
     PulseGrid.clearLoginFeedback();
     PulseGrid.setLoginLoading(false);
   });
+
+  $(document).on('mouseenter focusin', '#nav_login_btn, #hero_login_btn, #cta_login_btn', function () {
+    if (window.Shiny && Shiny.setInputValue) {
+      Shiny.setInputValue('login_prewarm', Date.now(), { priority: 'event' });
+    }
+  });
 };
 
 PulseGrid.setLoginLoading = function (loading) {

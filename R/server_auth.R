@@ -46,9 +46,14 @@ init_auth_server <- function(input, output, session, auth) {
       return()
     }
 
+    if (isTRUE(result$deactivated)) {
+      err <- "Your account has been deactivated. Please contact the administration."
+      login_error(err)
+      notify_login_result(FALSE, err)
+      return()
+    }
+
     login_error(NULL)
-    notify_login_result(TRUE)
-    removeModal()
     auth$logged_in <- TRUE
     auth$role <- result$role
     auth$id <- result$id
@@ -56,6 +61,8 @@ init_auth_server <- function(input, output, session, auth) {
     auth$email <- result$email
     auth$phone <- result$phone
     auth$must_change_password <- isTRUE(result$must_change_password)
+    notify_login_result(TRUE)
+    removeModal()
     if (identical(result$role, "technician")) {
       defer_technician_login(result$id)
     }
@@ -92,7 +99,7 @@ init_auth_server <- function(input, output, session, auth) {
       footer = NULL,
       tags$div(class = "landing-auth-card", style = "padding: 20px 10px; border-radius: 12px;",
         tags$div(class = "auth-card-header",
-          tags$h3("Operational Login"),
+          tags$h3(tagList(bs_icon("shield-lock-fill"), "Operational Login")),
           tags$p("Sign in with your REG operational credentials")
         ),
         tags$div(class = "form-group-custom",
@@ -124,6 +131,8 @@ init_auth_server <- function(input, output, session, auth) {
   observeEvent(input$hero_login_btn, { show_login_modal() })
   observeEvent(input$cta_login_btn, { show_login_modal() })
 
+  observeEvent(input$login_prewarm, { schedule_db_warm() }, ignoreInit = TRUE)
+
   observeEvent(input$logout_btn, {
     auth$logged_in <- FALSE
     auth$role <- NULL
@@ -133,6 +142,7 @@ init_auth_server <- function(input, output, session, auth) {
     auth$phone <- NULL
     auth$must_change_password <- FALSE
     login_error(NULL)
+    schedule_db_warm()
   })
 
   output$page <- renderUI({

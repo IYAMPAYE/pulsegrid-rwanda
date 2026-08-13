@@ -5,8 +5,7 @@ reg_landing_ui <- function() {
     # Header App Bar
     tags$header(class = "reg-header",
       tags$div(class = "reg-brand",
-        tags$img(src = "download.png", alt = "REG Logo", class = "reg-brand-logo",
-          style = "height: 42px; width: auto; object-fit: contain;")
+        tags$img(src = "download.png", alt = "REG Logo", class = "reg-brand-logo")
       ),
       tags$nav(class = "reg-nav",
         tags$a(class = "reg-nav-link active", href = "#", "Home"),
@@ -14,9 +13,28 @@ reg_landing_ui <- function() {
         tags$a(class = "reg-nav-link", href = "#how-it-works", "How It Works"),
         tags$a(class = "reg-nav-link", href = "#contact", "Contact")
       ),
-      tags$div(style = "display: flex; gap: 12px; align-items: center;",
-        actionButton("nav_login_btn", "Portal Login", class = "reg-btn-primary"),
-        tags$a(href = "https://regrwanda.app.n8n.cloud/form/7e0ba083-f5ba-4555-aa07-2f1e34997e15", target = "_blank", "Report Outage", class = "btn btn-outline-primary", style = "height: 48px; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;")
+      tags$div(class = "reg-header-actions",
+        actionButton(
+          "nav_login_btn",
+          tagList(
+            bs_icon("box-arrow-in-right"),
+            tags$span(class = "reg-btn-text reg-btn-text-long", "Portal Login"),
+            tags$span(class = "reg-btn-text reg-btn-text-short", "Login")
+          ),
+          class = "reg-btn-primary reg-header-btn",
+          title = "Portal Login"
+        ),
+        tags$a(
+          href = "https://regrwanda.app.n8n.cloud/form/db35406c-9d56-4a55-81df-444072f2260d",
+          target = "_blank",
+          title = "Report Outage",
+          tagList(
+            bs_icon("lightning-fill"),
+            tags$span(class = "reg-btn-text reg-btn-text-long", "Report Outage"),
+            tags$span(class = "reg-btn-text reg-btn-text-short", "Report")
+          ),
+          class = "btn btn-outline-primary reg-btn-outline-header reg-header-btn"
+        )
       )
     ),
 
@@ -26,7 +44,7 @@ reg_landing_ui <- function() {
         tags$img(src = "hello.jpg", class = "reg-hero-poster", alt = ""),
         tags$video(
           id = "hero-vid-1",
-          muted = NA, playsinline = NA, preload = "auto", poster = "hello.jpg",
+          autoplay = NA, muted = NA, playsinline = NA, preload = "auto", poster = "hello.jpg",
           class = "reg-hero-video-bg",
           tags$source(src = "hello2.mp4", type = "video/mp4")
         ),
@@ -37,7 +55,6 @@ reg_landing_ui <- function() {
           tags$source(src = "Video.mp4", type = "video/mp4")
         )
       ),
-      tags$script(HTML("if (window.PulseGrid) PulseGrid.initLanding();")),
       tags$div(class = "reg-hero-overlay"),
       tags$div(class = "reg-hero-content",
         tags$div(class = "reg-hero-body",
@@ -50,8 +67,13 @@ reg_landing_ui <- function() {
             "A faster, more reliable way to report electricity outages across Rwanda. Track ticket resolution status in real-time, straight from your device."
           ),
           tags$div(class = "reg-hero-actions",
-            tags$a(href = "https://regrwanda.app.n8n.cloud/form/7e0ba083-f5ba-4555-aa07-2f1e34997e15", target = "_blank", "Report an Outage", class = "reg-btn-accent", style = "text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"),
-            actionButton("hero_login_btn", "Track My Report / Login", class = "reg-btn-outline-hero")
+            tags$a(
+              href = "https://regrwanda.app.n8n.cloud/form/db35406c-9d56-4a55-81df-444072f2260d",
+              target = "_blank",
+              tagList(bs_icon("exclamation-triangle-fill"), "Report an Outage"),
+              class = "reg-btn-accent", style = "text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
+            ),
+            actionButton("hero_login_btn", tagList(bs_icon("search"), "Track My Report / Login"), class = "reg-btn-outline-hero")
           )
         )
       )
@@ -90,8 +112,15 @@ reg_landing_ui <- function() {
       tags$div(class = "reg-cta-content",
         tags$h2(class = "reg-cta-title", "Electricity problem in your area? Let us know."),
         tags$div(class = "reg-cta-actions",
-          tags$a(href = "https://regrwanda.app.n8n.cloud/form/7e0ba083-f5ba-4555-aa07-2f1e34997e15", target = "_blank", "Report an Outage", class = "reg-btn-primary", style = "height: 54px; font-size: 16px; padding: 0 32px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"),
-          actionButton("cta_login_btn", "Login to Operational Dashboard", class = "btn btn-outline-dark", style = "height: 54px; font-size: 16px; padding: 0 32px; border-radius: 8px;")
+          tags$a(
+            href = "https://regrwanda.app.n8n.cloud/form/db35406c-9d56-4a55-81df-444072f2260d",
+            target = "_blank",
+            tagList(bs_icon("lightning-fill"), "Report an Outage"),
+            class = "reg-btn-primary", style = "height: 54px; font-size: 16px; padding: 0 32px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"
+          ),
+          actionButton("cta_login_btn", tagList(bs_icon("speedometer2"), "Login to Operational Dashboard"),
+            class = "btn btn-outline-dark reg-btn-outline-cta", style = "height: 54px; font-size: 16px; padding: 0 32px; border-radius: 8px;"
+          )
         )
       )
     ),
@@ -101,10 +130,10 @@ reg_landing_ui <- function() {
       tags$div(class = "reg-footer-inner",
         tags$p(class = "reg-footer-copy", "© 2026 Rwanda Energy Group (REG). All rights reserved."),
         tags$div(class = "reg-footer-links",
-          tags$a(class = "reg-footer-link", href = "#", "Privacy Policy"),
-          tags$a(class = "reg-footer-link", href = "#", "Terms of Service"),
-          tags$a(class = "reg-footer-link", href = "#", "FAQ"),
-          tags$a(class = "reg-footer-link", href = "#", "Emergency Contact")
+          tags$a(class = "reg-footer-link", href = "#", tagList(bs_icon("shield-lock"), "Privacy Policy")),
+          tags$a(class = "reg-footer-link", href = "#", tagList(bs_icon("file-earmark-text"), "Terms of Service")),
+          tags$a(class = "reg-footer-link", href = "#", tagList(bs_icon("question-circle"), "FAQ")),
+          tags$a(class = "reg-footer-link", href = "#", tagList(bs_icon("telephone-fill"), "Emergency Contact"))
         )
       )
     )

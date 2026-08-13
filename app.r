@@ -1,10 +1,3 @@
-# =============================================================
-# PulseGrid — Ticket Tracking Platform
-# -------------------------------------------------------------
-# Entry point: loads R modules and runs the Shiny app.
-# Modules live in the R/ folder (db, auth, UI, server logic).
-# =============================================================
-
 library(shiny)
 library(DT)
 library(dplyr)
@@ -15,7 +8,7 @@ library(bslib)
 library(bsicons)
 library(bcrypt)
 
-# Load app modules (order matters for dependencies)
+# Load app modules for connecting the whole project 
 source("R/constants.R")
 source("R/db.R")
 source("R/auth.R")
@@ -35,5 +28,8 @@ shinyApp(
   onStart = function() {
     init_db_pool()
     warm_db_pool()
+    if (requireNamespace("later", quietly = TRUE)) {
+      later::later(warm_db_pool, delay = 2)
+    }
   }
 )

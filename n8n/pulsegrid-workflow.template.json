@@ -1,5 +1,5 @@
 ﻿{
-  "name": "PulseGrid Outage Automation",
+  "name": "PulseGrid — DB routing",
   "nodes": [
     {
       "parameters": {
@@ -81,7 +81,7 @@
       ],
       "id": "66f16595-27ca-489c-9eeb-aa28e5843d55",
       "name": "On form submission",
-      "webhookId": "be7c67e8-b8ac-4150-a352-9e5d1b5132e2"
+      "webhookId": "db35406c-9d56-4a55-81df-444072f2260d"
     },
     {
       "parameters": {
@@ -231,7 +231,8 @@
     },
     {
       "parameters": {
-        "jsCode": "// PulseGrid â€” outage clustering + technician routing\n//\n// Reads:\n//  - the scored ticket from \"Urgency Scoring\"\n//  - recent same-region tickets from \"Get row(s) in sheet\"\n//\n// If several reports from the same region landed close together,\n// treat it as a likely area-wide outage: escalate urgency and\n// note the cluster. Also assigns a technician based on region.\n\nconst currentTicket = $('Urgency Scoring').first().json;\nconst matchingRows = $input.all().map(i => i.json);\n\nconst CLUSTER_WINDOW_HOURS = 3;   // how far back counts as \"recent\"\nconst CLUSTER_THRESHOLD = 2;      // existing recent reports needed to call it a cluster\n\nconst cutoff = Date.now() - CLUSTER_WINDOW_HOURS * 60 * 60 * 1000;\n\nconst recentSameRegion = matchingRows.filter(r => {\n  const t = new Date(r.created_at).getTime();\n  return !isNaN(t) && t > cutoff && r.status !== \"Resolved\";\n});\n\nconst clusterAlert = recentSameRegion.length >= CLUSTER_THRESHOLD ? \"Yes\" : \"No\";\nconst clusterCount = recentSameRegion.length + 1; // +1 includes this new ticket\n\n// --- Escalate urgency if this looks like a real cluster ---\nlet urgency = currentTicket.urgency;\nlet urgencyReason = currentTicket.urgency_reason;\n\nif (clusterAlert === \"Yes\" && urgency !== \"High\") {\n  urgencyReason = \"Escalated to High: \" + clusterCount + \" reports from \" +\n    currentTicket.region + \" in the last \" + CLUSTER_WINDOW_HOURS +\n    \" hours. Original assessment: \" + urgencyReason;\n  urgency = \"High\";\n}\n\n// --- Assign a technician by region ---\nconst technicianMap = {\n  \"kigali\": \"J. Mugisha\",\n  \"huye\": \"A. Uwase\",\n  \"musanze\": \"P. Niyonzima\",\n  \"rubavu\": \"J. Mugisha\",\n  \"nyagatare\": \"A. Uwase\"\n};\n\nconst technicianEmailMap = {\n  \"J. Mugisha\": \"technician1@example.com\",\n  \"A. Uwase\": \"technician2@example.com\",\n  \"P. Niyonzima\": \"technician3@example.com\",\n  \"Unassigned\": \"dispatch@example.com\"\n};\n\nconst regionKey = (currentTicket.region || \"\").toLowerCase();\nconst technician = technicianMap[regionKey] || \"Unassigned\";\nconst technicianEmail = technicianEmailMap[technician] || technicianEmailMap[\"Unassigned\"];\n\nreturn {\n  json: {\n    ...currentTicket,\n    urgency: urgency,\n    urgency_reason: urgencyReason,\n    technician: technician,\n    technician_email: technicianEmail,\n    cluster_alert: clusterAlert,\n    cluster_count: clusterCount\n  }\n};"
+        "mode": "runOnceForAllItems",
+        "jsCode": "// PulseGrid — outage clustering + technician routing (DB-first)\n\nconst currentTicket = $('Urgency Scoring').first().json;\nconst matchingRows = $('Get Recent Tickets').all().map(i => i.json);\n\nconst CLUSTER_WINDOW_HOURS = 3;\nconst CLUSTER_THRESHOLD = 2;\n\nconst cutoff = Date.now() - CLUSTER_WINDOW_HOURS * 60 * 60 * 1000;\n\nconst recentSameRegion = matchingRows.filter(r => {\n  const t = new Date(r.created_at).getTime();\n  return !isNaN(t) && t > cutoff && r.status !== \"Resolved\";\n});\n\nconst clusterAlert = recentSameRegion.length >= CLUSTER_THRESHOLD ? \"Yes\" : \"No\";\nconst clusterCount = recentSameRegion.length + 1;\n\nlet urgency = currentTicket.urgency;\nlet urgencyReason = currentTicket.urgency_reason;\n\nif (clusterAlert === \"Yes\" && urgency !== \"High\") {\n  urgencyReason =\n    \"Escalated to High: \" + clusterCount + \" reports from \" +\n    currentTicket.region + \" in the last \" + CLUSTER_WINDOW_HOURS +\n    \" hours. Original assessment: \" + urgencyReason;\n  urgency = \"High\";\n}\n\nconst lookupRows = $('Lookup Technician by Region').all().map(i => i.json);\nconst dbMatch = lookupRows.find(r => r && r.technician && r.technician_email);\n\nconst fallbackMap = {\n  kigali:    { name: \"J. Mugisha\",   email: \"ribertiyampaye@gmail.com\" },\n  rubavu:    { name: \"B. Jamvier\",   email: \"thechribert@gmail.com\" },\n  nyagatare: { name: \"A. Uwase\",     email: \"mutabazievariste250@gmail.com\" },\n  musanze:   { name: \"P. Niyonzima\", email: \"mbihayimanabonard@gmail.com\" },\n  huye:      { name: \"C. Ange\",      email: \"muyangopelagie5@gmail.com\" }\n};\n\nlet technician, technicianEmail;\n\nif (dbMatch) {\n  technician = dbMatch.technician;\n  technicianEmail = dbMatch.technician_email;\n} else {\n  const regionKey = (currentTicket.region || \"\").toLowerCase().trim();\n  const fb = fallbackMap[regionKey];\n  technician = fb ? fb.name : \"Unassigned\";\n  technicianEmail = fb ? fb.email : \"ribertiyampaye@gmail.com\";\n}\n\nreturn [{\n  json: {\n    ...currentTicket,\n    urgency: urgency,\n    urgency_reason: urgencyReason,\n    technician: technician,\n    technician_email: technicianEmail,\n    cluster_alert: clusterAlert,\n    cluster_count: clusterCount\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -530,7 +531,7 @@
           "values": [
             {
               "column": "region",
-              "value": "={{ $json.region }}"
+              "value": "={{ $('Urgency Scoring').first().json.region }}"
             }
           ]
         },
@@ -544,6 +545,30 @@
       ],
       "id": "93b13e0d-c50c-4be2-9cb3-582c4e42b221",
       "name": "Get Recent Tickets",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "TgsGPkqA8eY16UcY",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT t.name AS technician, t.email AS technician_email\nFROM technician_regions tr\nJOIN technicians t ON t.id = tr.technician_id\nWHERE t.active = true\n  AND lower(tr.region) = lower($1)\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Urgency Scoring').first().json.region }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        592,
+        0
+      ],
+      "id": "b8f4e2a1-9c3d-4e5f-a6b7-lookup-tech-region",
+      "name": "Lookup Technician by Region",
       "alwaysOutputData": true,
       "credentials": {
         "postgres": {
@@ -918,6 +943,17 @@
       ]
     },
     "Urgency Scoring": {
+      "main": [
+        [
+          {
+            "node": "Lookup Technician by Region",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Technician by Region": {
       "main": [
         [
           {
