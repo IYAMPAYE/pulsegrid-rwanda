@@ -24,8 +24,6 @@ The project combines:
 - **n8n** — workflow automation (intake, AI scoring, email notifications, status updates)
 - **Google Gemini** — multilingual urgency classification (Kinyarwanda, French, English)
 
-This repository is suitable as a **portfolio / hiring demo** for data science, analytics engineering, and full-stack analytics roles.
-
 ---
 
 ## Problem Statement
