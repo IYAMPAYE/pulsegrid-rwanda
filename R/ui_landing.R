@@ -25,7 +25,7 @@ reg_landing_ui <- function() {
           title = "Portal Login"
         ),
         tags$a(
-          href = "https://regrwanda.app.n8n.cloud/form/db35406c-9d56-4a55-81df-444072f2260d",
+          href = " https://rwanda.app.n8n.cloud/form/a343fac4-25ea-4a33-b0db-c604445eadd1",
           target = "_blank",
           title = "Report Outage",
           tagList(
