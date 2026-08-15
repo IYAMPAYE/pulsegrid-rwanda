@@ -11,7 +11,6 @@ Live demo: [https://psz5gu-iyampaye-ribert.shinyapps.io/elecrticty_outges/](http
 
 Report form (public): [n8n outage form]( https://rwanda.app.n8n.cloud/form/a343fac4-25ea-4a33-b0db-c604445eadd1 )
 
----
 
 ## Overview
 
@@ -23,8 +22,6 @@ The project combines:
 - **Supabase (PostgreSQL)** — centralized ticket and user database
 - **n8n** — workflow automation (intake, AI scoring, email notifications, status updates)
 - **Google Gemini** — multilingual urgency classification (Kinyarwanda, French, English)
-
-This repository is suitable as a **portfolio / hiring demo** for data science, analytics engineering, and full-stack analytics roles.
 
 ---
 
