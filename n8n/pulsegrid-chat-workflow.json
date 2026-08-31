@@ -1,0 +1,127 @@
+{
+  "name": "PulseGrid — Chatbot (Gemini via Webhook)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pulsegrid-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook — Chat Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "pulsegrid-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract fields from the incoming Shiny payload\nconst body = $input.first().json.body || $input.first().json;\nconst message    = body.message    || '';\nconst session_id = body.session_id || 'unknown';\nconst timestamp  = body.timestamp  || new Date().toISOString();\n\nif (!message.trim()) {\n  throw new Error('Empty message received');\n}\n\nreturn [{ json: { message, session_id, timestamp } }];"
+      },
+      "id": "parse-node",
+      "name": "Parse Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "modelId": { "__rl": true, "value": "models/gemini-1.5-flash", "mode": "list" },
+        "messages": {
+          "values": [
+            {
+              "content": "You are PulseGrid Assistant, the official AI support bot for Rwanda Energy Group (REG). Your job is to help citizens with electricity outage reporting, ticket tracking, and general questions about power services in Rwanda.\n\nGuidelines:\n- Be friendly, concise, and professional\n- Respond in the same language the user writes in (Kinyarwanda, French, or English)\n- For safety emergencies (fire, sparks, electrocution), always give the emergency number: +250 788 300 000\n- For outage reports, direct users to the report form on the landing page\n- For ticket tracking, direct users to the portal login\n- For general REG contacts: customer care +250 252 570 720, email info@reg.rw\n- Keep answers under 3 sentences unless explaining a process\n- Never make up ticket IDs or status updates",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.message }}",
+              "role": "user"
+            }
+          ]
+        },
+        "options": { "temperature": 0.4, "maxOutputTokens": 300 }
+      },
+      "id": "gemini-node",
+      "name": "Gemini — Generate Reply",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the text from Gemini's response\nconst geminiOutput = $input.first().json;\n\n// Gemini node returns the text directly as 'text' or nested in 'content'\nconst reply = geminiOutput.text\n  || geminiOutput?.content?.parts?.[0]?.text\n  || geminiOutput?.candidates?.[0]?.content?.parts?.[0]?.text\n  || '🤖 Sorry, I could not generate a response. Please call REG on +250 252 570 720.';\n\nreturn [{ json: { reply: reply.trim() } }];"
+      },
+      "id": "format-node",
+      "name": "Format Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": { "__rl": true, "value": "public", "mode": "list" },
+        "table": { "__rl": true, "value": "chat_logs", "mode": "list" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $('Parse Input').item.json.session_id }}",
+            "user_message": "={{ $('Parse Input').item.json.message }}",
+            "bot_reply": "={{ $json.reply }}",
+            "created_at": "={{ $('Parse Input').item.json.timestamp }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "supabase-log-node",
+      "name": "Supabase — Log Chat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [900, 480],
+      "notes": "OPTIONAL: logs chats to a chat_logs table in Supabase. Skip or disable this node if you don't want to store chat history."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: $('Format Reply').item.json.reply }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json" },
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond-node",
+      "name": "Respond to Shiny",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook — Chat Input": {
+      "main": [[{ "node": "Parse Input", "type": "main", "index": 0 }]]
+    },
+    "Parse Input": {
+      "main": [[{ "node": "Gemini — Generate Reply", "type": "main", "index": 0 }]]
+    },
+    "Gemini — Generate Reply": {
+      "main": [[{ "node": "Format Reply", "type": "main", "index": 0 }]]
+    },
+    "Format Reply": {
+      "main": [
+        [{ "node": "Respond to Shiny", "type": "main", "index": 0 }],
+        [{ "node": "Supabase — Log Chat", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "description": "PulseGrid chatbot: receives messages from the R Shiny landing page, runs them through Gemini AI, optionally logs to Supabase chat_logs table, and returns the reply as JSON { reply: '...' }."
+  }
+}

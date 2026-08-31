@@ -257,3 +257,191 @@ if (window.jQuery) {
     }
   });
 }
+
+// ── PulseGrid Chatbot Widget ────────────────────────────────────────────────
+PulseGrid.initChat = function () {
+  var widget  = document.getElementById('pg-chat-widget');
+  var toggle  = document.getElementById('pg-chat-toggle');
+  var closeBtn = document.getElementById('pg-chat-close');
+  var window_ = document.getElementById('pg-chat-window');
+  var msgs    = document.getElementById('pg-chat-messages');
+  var typing  = document.getElementById('pg-chat-typing');
+  var input   = document.getElementById('pg-chat-input');
+  var sendBtn = document.getElementById('pg-chat-send');
+
+  if (!widget || !toggle || !msgs || !input || !sendBtn) return;
+  if (widget.dataset.chatInit === '1') return;
+  widget.dataset.chatInit = '1';
+
+  var isOpen = false;
+
+  // ── open / close ──────────────────────────────────────────────
+  function openChat() {
+    isOpen = true;
+    widget.classList.add('pg-chat-open');
+    input.focus();
+    scrollToBottom();
+  }
+  function closeChat() {
+    isOpen = false;
+    widget.classList.remove('pg-chat-open');
+  }
+  function toggleChat() { isOpen ? closeChat() : openChat(); }
+
+  toggle.addEventListener('click', toggleChat);
+  if (closeBtn) closeBtn.addEventListener('click', closeChat);
+
+  // Close on ESC
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen) closeChat();
+  });
+
+  // ── scroll helpers ────────────────────────────────────────────
+  function scrollToBottom() {
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // ── timestamp helper ──────────────────────────────────────────
+  function nowLabel() {
+    var d = new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  }
+
+  // ── append a message bubble ───────────────────────────────────
+  function appendMsg(text, role) {
+    var row = document.createElement('div');
+    row.className = 'pg-chat-msg pg-chat-msg-' + role;
+
+    var bubble = document.createElement('div');
+    bubble.className = 'pg-chat-bubble';
+    bubble.textContent = text;
+
+    var time = document.createElement('div');
+    time.className = 'pg-chat-time';
+    time.textContent = nowLabel();
+
+    row.appendChild(bubble);
+    row.appendChild(time);
+    msgs.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  // ── typing indicator ──────────────────────────────────────────
+  function showTyping() {
+    typing.classList.remove('pg-hidden');
+    scrollToBottom();
+  }
+  function hideTyping() {
+    typing.classList.add('pg-hidden');
+  }
+
+  // ── send message ──────────────────────────────────────────────
+  function sendMessage(text) {
+    text = (text || input.value).trim();
+    if (!text) return;
+
+    // Remove chips after first user message
+    var chips = msgs.querySelector('.pg-chat-chips');
+    if (chips) chips.remove();
+
+    appendMsg(text, 'user');
+    input.value = '';
+    autoResizeInput();
+    sendBtn.disabled = true;
+    showTyping();
+
+    // ── Send to Shiny backend ──────────────────────────────────
+    // Your server.R / server_admin.R can observe input$pg_chat_message
+    if (window.Shiny && Shiny.setInputValue) {
+      Shiny.setInputValue('pg_chat_message', text, { priority: 'event' });
+    }
+
+    // ── Fallback: simple keyword responses (until backend replies) ──
+    setTimeout(function () {
+      hideTyping();
+      var reply = PulseGrid.chatFallback(text);
+      appendMsg(reply, 'bot');
+      sendBtn.disabled = false;
+    }, 900 + Math.random() * 600);
+  }
+
+  // ── auto-resize textarea ──────────────────────────────────────
+  function autoResizeInput() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  input.addEventListener('input', function () {
+    autoResizeInput();
+    sendBtn.disabled = input.value.trim() === '';
+  });
+
+  // Initial state: send button disabled
+  sendBtn.disabled = true;
+
+  // Send on button click
+  sendBtn.addEventListener('click', function () { sendMessage(); });
+
+  // Send on Enter (Shift+Enter = new line)
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  });
+
+  // ── Quick-reply chips ──────────────────────────────────────────
+  msgs.addEventListener('click', function (e) {
+    if (e.target.classList.contains('pg-chat-chip')) {
+      sendMessage(e.target.textContent);
+    }
+  });
+
+  // ── Receive bot reply from Shiny ──────────────────────────────
+  // In your server.R, use:
+  //   session$sendCustomMessage('pg_chat_reply', list(text = "Your reply here"))
+  if (window.Shiny) {
+    Shiny.addCustomMessageHandler('pg_chat_reply', function (data) {
+      hideTyping();
+      appendMsg(data.text, 'bot');
+      sendBtn.disabled = false;
+    });
+  }
+};
+
+// ── Keyword fallback responses ────────────────────────────────────────────
+PulseGrid.chatFallback = function (text) {
+  var t = text.toLowerCase();
+  if (/report|outage|power|electricity|blackout|light/.test(t)) {
+    return '⚡ To report an outage, click the "Report an Outage" button on this page or visit our reporting form. You\'ll receive a unique ticket ID immediately.';
+  }
+  if (/track|ticket|status|id|check/.test(t)) {
+    return '🔍 You can track your ticket by logging into the portal using the "Track My Report / Login" button above. Have your ticket ID ready.';
+  }
+  if (/safety|emergency|fire|spark|shock|smoke|danger/.test(t)) {
+    return '🚨 SAFETY EMERGENCY — Please call REG Emergency Line immediately: +250 788 300 000. Do NOT touch any electrical equipment. Your report will be flagged as HIGH urgency automatically.';
+  }
+  if (/contact|phone|call|email|reg/.test(t)) {
+    return '📞 Rwanda Energy Group (REG) contacts:\n• Emergency: +250 788 300 000\n• Customer care: +250 252 570 720\n• Email: info@reg.rw\n• Website: www.reg.rw';
+  }
+  if (/region|kigali|huye|musanze|rubavu|nyagatare/.test(t)) {
+    return '📍 PulseGrid covers all five major regions: Kigali, Huye, Musanze, Rubavu, and Nyagatare. Select your region when submitting your report.';
+  }
+  if (/hello|hi|hey|bonjour|muraho/.test(t)) {
+    return '👋 Hello! How can I assist you today? You can report an outage, track a ticket, or ask me anything about electricity services in Rwanda.';
+  }
+  return '🤖 Thank you for reaching out! For instant help or outage reporting, please click the "Report an Outage" button above or call REG Customer Care at +250 252 570 720.';
+};
+
+
+// Boot chatbot on page load and after Shiny re-renders
+document.addEventListener('DOMContentLoaded', PulseGrid.initChat);
+document.addEventListener('shiny:connected', PulseGrid.initChat);
+if (window.jQuery) {
+  jQuery(document).on('shiny:value', function (e) {
+    if (e.name === 'page') setTimeout(PulseGrid.initChat, 0);
+  });
+}
+// ── End Chatbot Widget ──────────────────────────────────────────────────────

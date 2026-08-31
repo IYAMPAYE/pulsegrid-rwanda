@@ -43,32 +43,32 @@ format_admin_datetime <- function(x) {
 render_ops_ticket_card <- function(row) {
   tid <- as.character(row$ticket_id)
   tags$div(class = "ops-ticket-card",
-    tags$div(class = "ops-ticket-card-header",
-      tags$strong(paste0("#", tid)),
-      tags$span(class = "tech-status-badge tech-badge-default", normalize_status_label(row$status)),
-      if ("urgency" %in% names(row)) {
-        tags$span(class = paste("tech-status-badge", urgency_badge_class_ops(row$urgency)), row$urgency)
-      }
-    ),
-    tags$div(class = "ops-ticket-card-body",
-      tags$div(class = "tech-ticket-field", tags$strong("Region: "), normalize_region_label(row$region)),
-      if ("name" %in% names(row) && nzchar(as.character(row$name))) {
-        tags$div(class = "tech-ticket-field", tags$strong("Customer: "), row$name)
-      },
-      if ("created_at" %in% names(row)) {
-        tags$div(class = "tech-ticket-field", tags$strong("Reported: "), format(as.Date(row$created_at), "%d %b %Y"))
-      }
-    )
+           tags$div(class = "ops-ticket-card-header",
+                    tags$strong(paste0("#", tid)),
+                    tags$span(class = "tech-status-badge tech-badge-default", normalize_status_label(row$status)),
+                    if ("urgency" %in% names(row)) {
+                      tags$span(class = paste("tech-status-badge", urgency_badge_class_ops(row$urgency)), row$urgency)
+                    }
+           ),
+           tags$div(class = "ops-ticket-card-body",
+                    tags$div(class = "tech-ticket-field", tags$strong("Region: "), normalize_region_label(row$region)),
+                    if ("name" %in% names(row) && nzchar(as.character(row$name))) {
+                      tags$div(class = "tech-ticket-field", tags$strong("Customer: "), row$name)
+                    },
+                    if ("created_at" %in% names(row)) {
+                      tags$div(class = "tech-ticket-field", tags$strong("Reported: "), format(as.Date(row$created_at), "%d %b %Y"))
+                    }
+           )
   )
 }
 
 urgency_badge_class_ops <- function(urgency) {
   u <- tolower(trimws(as.character(urgency)))
   switch(u,
-    "low" = "tech-badge-low",
-    "medium" = "tech-badge-medium",
-    "high" = "tech-badge-high",
-    "tech-badge-default"
+         "low" = "tech-badge-low",
+         "medium" = "tech-badge-medium",
+         "high" = "tech-badge-high",
+         "tech-badge-default"
   )
 }
 
@@ -78,7 +78,7 @@ build_ops_ticket_table <- function(data, include_technician = TRUE) {
     if (include_technician) cols <- c("Ticket #", "Technician", cols[-1])
     return(as.data.frame(setNames(replicate(length(cols), character(0), simplify = FALSE), cols)))
   }
-
+  
   out <- data.frame(
     `Ticket #` = as.character(data$ticket_id),
     Region = vapply(data$region, normalize_region_label, character(1)),
@@ -97,7 +97,7 @@ build_ops_ticket_table <- function(data, include_technician = TRUE) {
     stringsAsFactors = FALSE,
     check.names = FALSE
   )
-
+  
   if (include_technician) {
     tech_col <- vapply(seq_len(nrow(data)), function(i) {
       tech <- as.character(data$technician[[i]])
@@ -105,13 +105,13 @@ build_ops_ticket_table <- function(data, include_technician = TRUE) {
     }, character(1))
     out <- cbind(`Ticket #` = out[["Ticket #"]], Technician = tech_col, out[, setdiff(names(out), "Ticket #"), drop = FALSE])
   }
-
+  
   out
 }
 
 build_technician_display <- function(techs, tickets = NULL) {
   if (nrow(techs) == 0) return(techs)
-
+  
   ticket_counts <- if (!is.null(tickets) && nrow(tickets) > 0) {
     tickets %>%
       filter(!is_unassigned_ticket(technician, technician_email)) %>%
@@ -125,7 +125,7 @@ build_technician_display <- function(techs, tickets = NULL) {
   } else {
     data.frame(email_key = character(), assigned_tickets = integer(), open_tickets = integer())
   }
-
+  
   techs %>%
     mutate(
       email_key = tolower(trimws(as.character(email))),
@@ -159,17 +159,17 @@ init_admin_server <- function(input, output, session, auth) {
   admin_nav_active <- function(section) {
     session$sendCustomMessage("adminNavActive", list(section = section))
   }
-
+  
   observeEvent(input$admin_nav_overview, {
     updateTabsetPanel(session, "admin_tabs", selected = "overview")
     admin_nav_active("overview")
   })
-
+  
   observeEvent(input$admin_nav_operations, {
     updateTabsetPanel(session, "admin_tabs", selected = "operations")
     admin_nav_active("operations")
   })
-
+  
   show_team_config_modal <- function() {
     showModal(modalDialog(
       title = NULL,
@@ -179,22 +179,22 @@ init_admin_server <- function(input, output, session, auth) {
       admin_team_modal_body()
     ))
   }
-
+  
   observeEvent(input$admin_nav_team, {
     req(auth$role == "admin")
     show_team_config_modal()
   }, ignoreInit = TRUE)
-
+  
   observeEvent(input$admin_nav_analytics, {
     updateTabsetPanel(session, "admin_tabs", selected = "analytics")
     admin_nav_active("analytics")
   })
-
+  
   observeEvent(input$admin_nav_gis, {
     updateTabsetPanel(session, "admin_tabs", selected = "gis")
     admin_nav_active("gis")
   })
-
+  
   output$admin_page_title <- renderText({
     switch(
       if (is.null(input$admin_tabs)) "overview" else input$admin_tabs,
@@ -205,17 +205,17 @@ init_admin_server <- function(input, output, session, auth) {
       "Overview Dashboard"
     )
   })
-
+  
   ops_invalidate <- reactiveVal(0)
   bump_ops_data <- function() ops_invalidate(ops_invalidate() + 1L)
-
+  
   tech_table_proxy <- dataTableProxy("ops_technician_table")
-
+  
   clear_technician_edit <- function() {
     updateSelectInput(session, "ops_manage_technician_id", selected = "")
     tryCatch(selectRows(tech_table_proxy, NULL), error = function(e) NULL)
   }
-
+  
   ticket_data <- reactivePoll(
     intervalMillis = 30000,
     session        = session,
@@ -239,11 +239,11 @@ init_admin_server <- function(input, output, session, auth) {
       )
     }
   )
-
+  
   filtered_data <- reactive({
     data <- ticket_data()
     if (nrow(data) == 0) return(data)
-
+    
     if (!is.null(input$region_filter) && input$region_filter != "All") {
       data <- data %>% filter(tolower(trimws(as.character(region))) == tolower(input$region_filter))
     }
@@ -255,11 +255,11 @@ init_admin_server <- function(input, output, session, auth) {
     }
     data
   })
-
+  
   output$total_count <- renderText({
     tryCatch(nrow(filtered_data()), error = function(e) 0)
   })
-
+  
   output$open_count <- renderText({
     tryCatch(
       filtered_data() %>%
@@ -268,7 +268,7 @@ init_admin_server <- function(input, output, session, auth) {
       error = function(e) 0
     )
   })
-
+  
   output$progress_count <- renderText({
     tryCatch(
       filtered_data() %>%
@@ -277,7 +277,7 @@ init_admin_server <- function(input, output, session, auth) {
       error = function(e) 0
     )
   })
-
+  
   output$urgent_count <- renderText({
     tryCatch(
       filtered_data() %>%
@@ -286,7 +286,7 @@ init_admin_server <- function(input, output, session, auth) {
       error = function(e) 0
     )
   })
-
+  
   output$safety_count <- renderText({
     tryCatch({
       data <- filtered_data()
@@ -294,24 +294,24 @@ init_admin_server <- function(input, output, session, auth) {
       data %>% filter(safety_flag == "Yes") %>% nrow()
     }, error = function(e) 0)
   })
-
+  
   output$admin_region_chart <- renderUI({
     req(auth$role == "admin")
     data <- filtered_data()
     if (nrow(data) == 0) {
       return(tags$div(class = "tech-empty-state",
-        bs_icon("geo-alt", class = "tech-empty-icon"),
-        tags$p("No regional data for the current filters.")
+                      bs_icon("geo-alt", class = "tech-empty-icon"),
+                      tags$p("No regional data for the current filters.")
       ))
     }
     echarts4rOutput("region_plot", height = "280px")
   })
-
+  
   output$region_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- filtered_data()
     req(nrow(data) > 0)
-
+    
     data %>%
       mutate(region = normalize_region_label(region)) %>%
       count(region) %>%
@@ -322,34 +322,35 @@ init_admin_server <- function(input, output, session, auth) {
       e_legend(show = FALSE) %>%
       e_color(REG_CHART_PRIMARY)
   })
-
+  
   output$admin_status_chart <- renderUI({
     req(auth$role == "admin")
     data <- filtered_data()
     if (nrow(data) == 0) {
       return(tags$div(class = "tech-empty-state",
-        bs_icon("pie-chart", class = "tech-empty-icon"),
-        tags$p("No status breakdown for the current filters.")
+                      bs_icon("pie-chart", class = "tech-empty-icon"),
+                      tags$p("No status breakdown for the current filters.")
       ))
     }
     echarts4rOutput("status_plot", height = "280px")
   })
-
+  
   output$status_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- filtered_data()
     req(nrow(data) > 0)
-
+    
     data %>%
       mutate(status = normalize_status_label(status)) %>%
       count(status) %>%
       e_charts(status) %>%
       e_pie(n, radius = c("42%", "68%")) %>%
-      e_tooltip(trigger = "item") %>%
+      e_labels(position = "outside", formatter = "{d}%") %>%
+      e_tooltip(trigger = "item", formatter = "{b}: {d}%") %>%
       e_legend(orient = "horizontal", bottom = 0) %>%
       e_color(REG_CHART_STATUS_COLORS)
   })
-
+  
   output$ticket_table <- renderDT({
     data <- filtered_data()
     if (nrow(data) == 0) {
@@ -360,14 +361,14 @@ init_admin_server <- function(input, output, session, auth) {
         class = "cell-border stripe compact"
       ))
     }
-
+    
     data <- data %>%
       mutate(
         region = normalize_region_label(region),
         status = normalize_status_label(status)
       ) %>%
       arrange(desc(created_at))
-
+    
     display_cols <- intersect(
       c("ticket_id", "name", "phone", "email", "region", "time_window",
         "status", "urgency", "safety_flag", "technician", "description",
@@ -375,7 +376,7 @@ init_admin_server <- function(input, output, session, auth) {
       names(data)
     )
     data <- data[, display_cols, drop = FALSE]
-
+    
     dt <- datatable(
       data,
       options = list(
@@ -388,7 +389,7 @@ init_admin_server <- function(input, output, session, auth) {
       rownames = FALSE,
       class = "cell-border stripe nowrap compact"
     )
-
+    
     if ("urgency" %in% names(data)) {
       dt <- dt %>% formatStyle(
         "urgency",
@@ -399,7 +400,7 @@ init_admin_server <- function(input, output, session, auth) {
         fontWeight = "bold"
       )
     }
-
+    
     if ("safety_flag" %in% names(data)) {
       dt <- dt %>% formatStyle(
         "safety_flag",
@@ -407,25 +408,25 @@ init_admin_server <- function(input, output, session, auth) {
         backgroundColor = styleEqual("Yes", REG_SAFETY_ROW_COLOR)
       )
     }
-
+    
     dt
   })
-
+  
   analytics_filtered_data <- reactive({
     req(auth$role == "admin")
     data <- ticket_data()
     if (nrow(data) == 0) return(data)
-
+    
     preset <- if (is.null(input$analytics_date_filter)) "Last 30 days" else input$analytics_date_filter
     data <- apply_ops_date_filter(data, preset)
-
+    
     if (!is.null(input$analytics_region_filter) && input$analytics_region_filter != "All") {
       data <- data %>%
         filter(tolower(trimws(as.character(region))) == tolower(input$analytics_region_filter))
     }
     data
   })
-
+  
   analytics_period_days <- reactive({
     preset <- if (is.null(input$analytics_date_filter)) "Last 30 days" else input$analytics_date_filter
     if (preset == "All time") {
@@ -442,11 +443,11 @@ init_admin_server <- function(input, output, session, auth) {
       30L
     )
   })
-
+  
   output$analytics_total_count <- renderText({
     tryCatch(nrow(analytics_filtered_data()), error = function(e) 0)
   })
-
+  
   output$analytics_avg_daily <- renderText({
     tryCatch({
       n <- nrow(analytics_filtered_data())
@@ -454,7 +455,7 @@ init_admin_server <- function(input, output, session, auth) {
       sprintf("%.1f", n / days)
     }, error = function(e) "0")
   })
-
+  
   output$analytics_resolved_rate <- renderText({
     tryCatch({
       data <- analytics_filtered_data()
@@ -463,7 +464,7 @@ init_admin_server <- function(input, output, session, auth) {
       paste0(round(100 * resolved / nrow(data)), "%")
     }, error = function(e) "0%")
   })
-
+  
   output$analytics_high_urgency_count <- renderText({
     tryCatch({
       data <- analytics_filtered_data()
@@ -471,14 +472,14 @@ init_admin_server <- function(input, output, session, auth) {
       sum(tolower(trimws(as.character(data$urgency))) == "high")
     }, error = function(e) 0)
   })
-
+  
   analytics_empty_chart <- function(message, icon = "bar-chart") {
     tags$div(class = "tech-empty-state",
-      bs_icon(icon, class = "tech-empty-icon"),
-      tags$p(message)
+             bs_icon(icon, class = "tech-empty-icon"),
+             tags$p(message)
     )
   }
-
+  
   output$analytics_daily_chart <- renderUI({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
@@ -487,16 +488,16 @@ init_admin_server <- function(input, output, session, auth) {
     }
     echarts4rOutput("analytics_daily_plot", height = "300px")
   })
-
+  
   output$analytics_daily_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
     req(nrow(data) > 0)
-
+    
     daily <- data %>%
       count(created_at, name = "tickets") %>%
       rename(day = created_at)
-
+    
     all_days <- seq(min(daily$day), max(daily$day), by = "day")
     plot_data <- data.frame(day = all_days) %>%
       left_join(daily, by = "day") %>%
@@ -504,7 +505,7 @@ init_admin_server <- function(input, output, session, auth) {
         tickets = ifelse(is.na(tickets), 0L, tickets),
         label = format(day, "%d %b")
       )
-
+    
     plot_data %>%
       e_charts(label) %>%
       e_line(
@@ -520,7 +521,7 @@ init_admin_server <- function(input, output, session, auth) {
       e_legend(show = FALSE) %>%
       e_color(REG_CHART_PRIMARY)
   })
-
+  
   output$analytics_region_chart <- renderUI({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
@@ -529,12 +530,12 @@ init_admin_server <- function(input, output, session, auth) {
     }
     echarts4rOutput("analytics_region_plot", height = "300px")
   })
-
+  
   output$analytics_region_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
     req(nrow(data) > 0)
-
+    
     data %>%
       mutate(region = normalize_region_label(region)) %>%
       count(region, name = "tickets") %>%
@@ -545,7 +546,7 @@ init_admin_server <- function(input, output, session, auth) {
       e_legend(show = FALSE) %>%
       e_color(REG_CHART_PRIMARY)
   })
-
+  
   output$analytics_status_chart <- renderUI({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
@@ -554,22 +555,23 @@ init_admin_server <- function(input, output, session, auth) {
     }
     echarts4rOutput("analytics_status_plot", height = "280px")
   })
-
+  
   output$analytics_status_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
     req(nrow(data) > 0)
-
+    
     data %>%
       mutate(status = normalize_status_label(status)) %>%
       count(status) %>%
       e_charts(status) %>%
       e_pie(n, radius = c("42%", "68%")) %>%
-      e_tooltip(trigger = "item") %>%
+      e_labels(position = "outside", formatter = "{d}%") %>%
+      e_tooltip(trigger = "item", formatter = "{b}: {d}%") %>%
       e_legend(orient = "horizontal", bottom = 0) %>%
       e_color(REG_CHART_STATUS_COLORS)
   })
-
+  
   output$analytics_urgency_chart <- renderUI({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
@@ -578,26 +580,27 @@ init_admin_server <- function(input, output, session, auth) {
     }
     echarts4rOutput("analytics_urgency_plot", height = "280px")
   })
-
+  
   output$analytics_urgency_plot <- renderEcharts4r({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
     req(nrow(data) > 0)
-
+    
     data %>%
       mutate(urgency = as.character(urgency)) %>%
       count(urgency) %>%
       e_charts(urgency) %>%
       e_pie(n, radius = c("42%", "68%")) %>%
-      e_tooltip(trigger = "item") %>%
+      e_labels(position = "outside", formatter = "{d}%") %>%
+      e_tooltip(trigger = "item", formatter = "{b}: {d}%") %>%
       e_legend(orient = "horizontal", bottom = 0) %>%
       e_color(c("#15803d", "#f59e0b", "#ef4444"))
   })
-
+  
   output$analytics_region_table <- renderDT({
     req(auth$role == "admin")
     data <- analytics_filtered_data()
-
+    
     if (nrow(data) == 0) {
       return(datatable(
         data.frame(Notice = "No data for the selected period."),
@@ -606,7 +609,7 @@ init_admin_server <- function(input, output, session, auth) {
         class = "cell-border stripe compact"
       ))
     }
-
+    
     summary <- data %>%
       mutate(
         region = normalize_region_label(region),
@@ -623,7 +626,7 @@ init_admin_server <- function(input, output, session, auth) {
         .groups = "drop"
       ) %>%
       arrange(desc(Total))
-
+    
     datatable(
       summary,
       options = list(
@@ -636,7 +639,7 @@ init_admin_server <- function(input, output, session, auth) {
       class = "cell-border stripe nowrap compact admin-ops-dt"
     )
   })
-
+  
   technician_roster <- reactivePoll(
     intervalMillis = 30000,
     session        = session,
@@ -651,7 +654,7 @@ init_admin_server <- function(input, output, session, auth) {
       )
     }
   )
-
+  
   active_technicians <- reactive({
     req(auth$role == "admin")
     techs <- technician_roster()
@@ -665,7 +668,7 @@ init_admin_server <- function(input, output, session, auth) {
       distinct(id, .keep_all = TRUE) %>%
       arrange(name)
   })
-
+  
   technicians_for_display <- reactive({
     techs <- technician_roster()
     if (nrow(techs) == 0) return(techs)
@@ -678,7 +681,7 @@ init_admin_server <- function(input, output, session, auth) {
       ungroup() %>%
       mutate(region = coalesce(routing_region, assigned_region))
   })
-
+  
   observe({
     techs <- technicians_for_display()
     req(auth$role == "admin")
@@ -702,7 +705,7 @@ init_admin_server <- function(input, output, session, auth) {
       selected = selected
     )
   })
-
+  
   observeEvent(input$ops_technician_table_rows_selected, {
     req(auth$role == "admin")
     sel <- input$ops_technician_table_rows_selected
@@ -717,7 +720,7 @@ init_admin_server <- function(input, output, session, auth) {
       selected = as.character(display$id[[sel]])
     )
   }, ignoreNULL = TRUE)
-
+  
   selected_manage_technician <- reactive({
     req(auth$role == "admin")
     id <- input$ops_manage_technician_id
@@ -727,14 +730,14 @@ init_admin_server <- function(input, output, session, auth) {
     if (nrow(tech) == 0) return(NULL)
     tech
   })
-
+  
   ops_filtered_data <- reactive({
     req(auth$role == "admin")
     data <- ticket_data()
     if (nrow(data) == 0) return(data)
-
+    
     data <- apply_ops_date_filter(data, input$ops_date_filter)
-
+    
     if (!is.null(input$ops_region_filter) && input$ops_region_filter != "All") {
       data <- data[tolower(trimws(as.character(data$region))) == tolower(input$ops_region_filter), , drop = FALSE]
     }
@@ -743,33 +746,33 @@ init_admin_server <- function(input, output, session, auth) {
     }
     data
   })
-
+  
   ops_assigned_data <- reactive({
     data <- ops_filtered_data()
     if (nrow(data) == 0) return(data)
     assigned <- !is_unassigned_ticket(data$technician, data$technician_email)
     data[assigned, , drop = FALSE]
   })
-
+  
   ops_unassigned_data <- reactive({
     data <- ops_filtered_data()
     if (nrow(data) == 0) return(data)
     unassigned <- is_unassigned_ticket(data$technician, data$technician_email)
     data[unassigned, , drop = FALSE]
   })
-
+  
   output$ops_assigned_count <- renderText({
     tryCatch(nrow(ops_assigned_data()), error = function(e) 0)
   })
-
+  
   output$ops_unassigned_count <- renderText({
     tryCatch(nrow(ops_unassigned_data()), error = function(e) 0)
   })
-
+  
   output$ops_technician_count <- renderText({
     tryCatch(nrow(technicians_for_display()), error = function(e) 0)
   })
-
+  
   output$ops_assignments_summary <- renderText({
     data <- tryCatch(ops_assigned_data(), error = function(e) data.frame())
     n_tickets <- nrow(data)
@@ -777,17 +780,17 @@ init_admin_server <- function(input, output, session, auth) {
     n_techs <- length(unique(tolower(trimws(as.character(data$technician_email)))))
     paste0(n_tickets, " ticket", if (n_tickets != 1) "s" else "", " · ", n_techs, " technician", if (n_techs != 1) "s" else "")
   })
-
+  
   output$ops_unassigned_summary <- renderText({
     n <- tryCatch(nrow(ops_unassigned_data()), error = function(e) 0)
     if (n == 0) "All clear"
     else paste0(n, " waiting")
   })
-
+  
   output$ops_assignments_table <- renderDT({
     req(auth$role == "admin")
     data <- ops_assigned_data()
-
+    
     if (nrow(data) == 0) {
       return(datatable(
         data.frame(Notice = "No assigned tickets match the current filters."),
@@ -796,12 +799,12 @@ init_admin_server <- function(input, output, session, auth) {
         class = "cell-border stripe compact"
       ))
     }
-
+    
     data <- data[order(
       tolower(trimws(as.character(data$technician))),
       -as.numeric(as.Date(data$created_at))
     ), , drop = FALSE]
-
+    
     display <- build_ops_ticket_table(data, include_technician = TRUE)
     dt <- datatable(
       display,
@@ -816,7 +819,7 @@ init_admin_server <- function(input, output, session, auth) {
       selection = "none",
       class = "cell-border stripe nowrap compact admin-ops-dt"
     )
-
+    
     if ("Status" %in% names(display)) {
       dt <- dt %>% formatStyle(
         "Status",
@@ -836,11 +839,11 @@ init_admin_server <- function(input, output, session, auth) {
     }
     dt
   })
-
+  
   output$ops_unassigned_table <- renderDT({
     req(auth$role == "admin")
     data <- ops_unassigned_data()
-
+    
     if (nrow(data) == 0) {
       return(datatable(
         data.frame(Notice = "No unassigned tickets — all reports are routed."),
@@ -849,10 +852,10 @@ init_admin_server <- function(input, output, session, auth) {
         class = "cell-border stripe compact"
       ))
     }
-
+    
     data <- data[order(data$created_at, decreasing = TRUE), , drop = FALSE]
     display <- build_ops_ticket_table(data, include_technician = FALSE)
-
+    
     dt <- datatable(
       display,
       options = list(
@@ -866,7 +869,7 @@ init_admin_server <- function(input, output, session, auth) {
       selection = "none",
       class = "cell-border stripe nowrap compact admin-ops-dt"
     )
-
+    
     if ("Status" %in% names(display)) {
       dt <- dt %>% formatStyle(
         "Status",
@@ -886,22 +889,22 @@ init_admin_server <- function(input, output, session, auth) {
     }
     dt
   })
-
+  
   output$ops_reassign_panel <- renderUI({
     req(auth$role == "admin")
     techs <- active_technicians()
     if (nrow(techs) == 0) {
       return(tags$div(class = "admin-ops-card admin-ops-action-desk",
-        tags$div(class = "admin-ops-card-head",
-          bs_icon("arrow-left-right"),
-          tags$span("Quick assign")
-        ),
-        tags$div(class = "admin-ops-card-body",
-          tags$p(class = "admin-ops-help", "No active technicians available. Add or activate a technician in the Team tab.")
-        )
+                      tags$div(class = "admin-ops-card-head",
+                               bs_icon("arrow-left-right"),
+                               tags$span("Quick assign")
+                      ),
+                      tags$div(class = "admin-ops-card-body",
+                               tags$p(class = "admin-ops-help", "No active technicians available. Add or activate a technician in the Team tab.")
+                      )
       ))
     }
-
+    
     unassigned <- ops_unassigned_data()
     open_tickets <- ops_filtered_data()
     if (nrow(open_tickets) > 0) {
@@ -911,20 +914,20 @@ init_admin_server <- function(input, output, session, auth) {
         drop = FALSE
       ]
     }
-
+    
     ticket_source <- if (nrow(unassigned) > 0) unassigned else open_tickets
     if (nrow(ticket_source) == 0) {
       return(tags$div(class = "admin-ops-card admin-ops-action-desk",
-        tags$div(class = "admin-ops-card-head",
-          bs_icon("arrow-left-right"),
-          tags$span("Quick assign")
-        ),
-        tags$div(class = "admin-ops-card-body",
-          tags$p(class = "admin-ops-help", "No open tickets match the current filters.")
-        )
+                      tags$div(class = "admin-ops-card-head",
+                               bs_icon("arrow-left-right"),
+                               tags$span("Quick assign")
+                      ),
+                      tags$div(class = "admin-ops-card-body",
+                               tags$p(class = "admin-ops-help", "No open tickets match the current filters.")
+                      )
       ))
     }
-
+    
     ticket_labels <- paste0(
       "#", ticket_source$ticket_id, " — ",
       normalize_region_label(ticket_source$region), " (",
@@ -934,41 +937,41 @@ init_admin_server <- function(input, output, session, auth) {
       ticket_labels <- paste0("[Unassigned] ", ticket_labels)
     }
     ticket_choices <- stats::setNames(as.character(ticket_source$ticket_id), ticket_labels)
-
+    
     tech_labels <- paste0(
       techs$name, " — ",
       normalize_region_label(techs$region)
     )
     tech_choices <- stats::setNames(as.character(techs$id), tech_labels)
-
+    
     tags$div(class = "admin-ops-card admin-ops-action-desk",
-      tags$div(class = "admin-ops-card-head",
-        bs_icon("arrow-left-right"),
-        tags$span("Quick assign")
-      ),
-      tags$div(class = "admin-ops-card-body",
-        tags$p(class = "admin-ops-help",
-          if (nrow(unassigned) > 0) {
-            paste0(nrow(unassigned), " unassigned ticket(s) in queue.")
-          } else {
-            "Reassign any open ticket to a different technician."
-          }
-        ),
-        tags$div(class = "admin-ops-action-grid",
-          selectInput("ops_reassign_ticket", "Ticket", choices = ticket_choices, width = "100%"),
-          selectInput("ops_reassign_technician", "Assign to", choices = tech_choices, width = "100%"),
-          tags$div(class = "admin-ops-action-submit",
-            actionButton(
-              "ops_reassign_submit",
-              tagList(bs_icon("check2"), " Assign"),
-              class = "btn btn-primary btn-submit-custom"
-            )
-          )
-        )
-      )
+             tags$div(class = "admin-ops-card-head",
+                      bs_icon("arrow-left-right"),
+                      tags$span("Quick assign")
+             ),
+             tags$div(class = "admin-ops-card-body",
+                      tags$p(class = "admin-ops-help",
+                             if (nrow(unassigned) > 0) {
+                               paste0(nrow(unassigned), " unassigned ticket(s) in queue.")
+                             } else {
+                               "Reassign any open ticket to a different technician."
+                             }
+                      ),
+                      tags$div(class = "admin-ops-action-grid",
+                               selectInput("ops_reassign_ticket", "Ticket", choices = ticket_choices, width = "100%"),
+                               selectInput("ops_reassign_technician", "Assign to", choices = tech_choices, width = "100%"),
+                               tags$div(class = "admin-ops-action-submit",
+                                        actionButton(
+                                          "ops_reassign_submit",
+                                          tagList(bs_icon("check2"), " Assign"),
+                                          class = "btn btn-primary btn-submit-custom"
+                                        )
+                               )
+                      )
+             )
     )
   })
-
+  
   observeEvent(input$ops_reassign_submit, {
     req(auth$role == "admin", input$ops_reassign_ticket, input$ops_reassign_technician)
     techs <- active_technicians()
@@ -988,7 +991,7 @@ init_admin_server <- function(input, output, session, auth) {
       showNotification(conditionMessage(e), type = "error")
     })
   }, ignoreInit = TRUE)
-
+  
   observeEvent(input$ops_add_technician_btn, {
     req(auth$role == "admin")
     showModal(modalDialog(
@@ -1007,7 +1010,7 @@ init_admin_server <- function(input, output, session, auth) {
       )
     ))
   }, ignoreInit = TRUE)
-
+  
   observeEvent(input$ops_create_technician_confirm, {
     req(auth$role == "admin")
     tryCatch({
@@ -1025,13 +1028,13 @@ init_admin_server <- function(input, output, session, auth) {
       showNotification(conditionMessage(e), type = "error", duration = 8)
     })
   }, ignoreInit = TRUE)
-
+  
   output$ops_technician_table <- renderDT({
     req(auth$role == "admin")
     tryCatch({
       techs <- technicians_for_display()
       tickets <- ops_filtered_data()
-
+      
       if (nrow(techs) == 0) {
         return(datatable(
           data.frame(Notice = "No technicians yet. Use Add technician above."),
@@ -1040,9 +1043,9 @@ init_admin_server <- function(input, output, session, auth) {
           class = "cell-border stripe compact"
         ))
       }
-
+      
       display <- build_technician_display(techs, tickets)
-
+      
       dt <- datatable(
         display,
         options = list(
@@ -1073,77 +1076,77 @@ init_admin_server <- function(input, output, session, auth) {
       )
     })
   })
-
+  
   output$ops_technician_edit_form <- renderUI({
     req(auth$role == "admin")
     tech <- selected_manage_technician()
     if (is.null(tech)) {
       return(tags$div(class = "admin-ops-edit-empty",
-        bs_icon("person-lines-fill"),
-        tags$p("Select a technician from the roster table or dropdown to edit their profile.")
+                      bs_icon("person-lines-fill"),
+                      tags$p("Select a technician from the roster table or dropdown to edit their profile.")
       ))
     }
-
+    
     is_active <- is.na(tech$active[[1]]) || isTRUE(tech$active[[1]])
     tagList(
       tags$div(class = "admin-ops-form-section",
-        tags$h4(class = "admin-ops-form-section-title", "Profile"),
-        tags$div(class = "admin-ops-form-grid",
-          textInput("ops_edit_name", "Full name", value = tech$name[[1]]),
-          textInput("ops_edit_email", "Email", value = tech$email[[1]]),
-          textInput("ops_edit_phone", "Phone", value = ifelse(is.na(tech$phone), "", tech$phone[[1]]))
-        )
+               tags$h4(class = "admin-ops-form-section-title", "Profile"),
+               tags$div(class = "admin-ops-form-grid",
+                        textInput("ops_edit_name", "Full name", value = tech$name[[1]]),
+                        textInput("ops_edit_email", "Email", value = tech$email[[1]]),
+                        textInput("ops_edit_phone", "Phone", value = ifelse(is.na(tech$phone), "", tech$phone[[1]]))
+               )
       ),
       tags$div(class = "admin-ops-form-section",
-        tags$h4(class = "admin-ops-form-section-title", "Region & routing"),
-        selectInput(
-          "ops_edit_region", "Assigned region (n8n auto-routing)",
-          choices = regions,
-          selected = ifelse(
-            is.na(tech$region) || !nzchar(as.character(tech$region)),
-            regions[[1]],
-            normalize_region_label(tech$region)
-          ),
-          width = "100%"
-        ),
-        checkboxInput(
-          "ops_edit_active",
-          "Active — receives new auto-routed tickets",
-          value = is_active
-        )
+               tags$h4(class = "admin-ops-form-section-title", "Region & routing"),
+               selectInput(
+                 "ops_edit_region", "Assigned region (n8n auto-routing)",
+                 choices = regions,
+                 selected = ifelse(
+                   is.na(tech$region) || !nzchar(as.character(tech$region)),
+                   regions[[1]],
+                   normalize_region_label(tech$region)
+                 ),
+                 width = "100%"
+               ),
+               checkboxInput(
+                 "ops_edit_active",
+                 "Active — receives new auto-routed tickets",
+                 value = is_active
+               )
       ),
       tags$div(class = "admin-ops-form-section",
-        tags$h4(class = "admin-ops-form-section-title", "Account access"),
-        passwordInput("ops_edit_password", "New temporary password (optional)"),
-        tags$div(class = "admin-ops-form-actions",
-          actionButton(
-            "ops_save_technician_btn",
-            tagList(bs_icon("check2"), " Save changes"),
-            class = "btn btn-primary btn-submit-custom"
-          ),
-          if (is_active) {
-            actionButton(
-              "ops_deactivate_technician_btn",
-              tagList(bs_icon("person-x"), " Deactivate"),
-              class = "btn btn-outline-danger admin-ops-secondary-btn"
-            )
-          } else {
-            actionButton(
-              "ops_activate_technician_btn",
-              tagList(bs_icon("person-check"), " Activate"),
-              class = "btn btn-outline-success admin-ops-secondary-btn"
-            )
-          }
-        )
+               tags$h4(class = "admin-ops-form-section-title", "Account access"),
+               passwordInput("ops_edit_password", "New temporary password (optional)"),
+               tags$div(class = "admin-ops-form-actions",
+                        actionButton(
+                          "ops_save_technician_btn",
+                          tagList(bs_icon("check2"), " Save changes"),
+                          class = "btn btn-primary btn-submit-custom"
+                        ),
+                        if (is_active) {
+                          actionButton(
+                            "ops_deactivate_technician_btn",
+                            tagList(bs_icon("person-x"), " Deactivate"),
+                            class = "btn btn-outline-danger admin-ops-secondary-btn"
+                          )
+                        } else {
+                          actionButton(
+                            "ops_activate_technician_btn",
+                            tagList(bs_icon("person-check"), " Activate"),
+                            class = "btn btn-outline-success admin-ops-secondary-btn"
+                          )
+                        }
+               )
       )
     )
   })
-
+  
   observeEvent(input$ops_save_technician_btn, {
     req(auth$role == "admin")
     tech <- selected_manage_technician()
     if (is.null(tech)) return()
-
+    
     tech_id <- tech$id[[1]]
     tryCatch({
       update_technician_admin(
@@ -1164,7 +1167,7 @@ init_admin_server <- function(input, output, session, auth) {
       showNotification(conditionMessage(e), type = "error", duration = 8)
     })
   }, ignoreInit = TRUE)
-
+  
   observeEvent(input$ops_deactivate_technician_btn, {
     req(auth$role == "admin")
     tech <- selected_manage_technician()
@@ -1181,7 +1184,7 @@ init_admin_server <- function(input, output, session, auth) {
       showNotification(conditionMessage(e), type = "error")
     })
   }, ignoreInit = TRUE)
-
+  
   observeEvent(input$ops_activate_technician_btn, {
     req(auth$role == "admin")
     tech <- selected_manage_technician()

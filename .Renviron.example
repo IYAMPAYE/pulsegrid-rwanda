@@ -1,4 +1,7 @@
-# Copy this file to .Renviron and fill in your Supabase database password.
+# Copy this file to .Renviron and fill in your credentials.
 # Restart R after saving (Session > Restart R).
 
 SUPABASE_DB_PASSWORD=your_supabase_database_password_here
+
+# n8n chatbot webhook URL (from your n8n Chat workflow → Webhook node → Production URL)
+N8N_CHAT_WEBHOOK_URL=https://utuje.app.n8n.cloud/webhook/pulsegrid-chat

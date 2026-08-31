@@ -17,3 +17,4 @@ server <- function(input, output, session) {
   init_admin_server(input, output, session, auth)
   init_technician_server(input, output, session, auth)
 }
+
