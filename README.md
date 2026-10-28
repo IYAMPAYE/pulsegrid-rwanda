@@ -9,7 +9,7 @@ output:
 
 Live demo: [https://psz5gu-iyampaye-ribert.shinyapps.io/elecrticty_outges/](https://psz5gu-iyampaye-ribert.shinyapps.io/elecrticty_outges/)
 
-Report form (public): [n8n outage form]( https://utuje.app.n8n.cloud/form/0335b65f-8051-41dd-9b4f-ea18874c5f3b )
+Report form (public): [n8n outage form]( https://electricity-outage.app.n8n.cloud/form/d33f9e3e-c3c6-42e8-8e8e-d82380c60240 )
 
 
 ## Overview
